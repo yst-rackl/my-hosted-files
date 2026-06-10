@@ -1,0 +1,68 @@
+<script>
+    // 1. SET YOUR PHONE NUMBER HERE 
+    // Must include country code, NO spaces, NO dashes, NO '+' sign.
+    const HOST_PHONE = '60122131392'; 
+
+    // Function to generate guest name fields dynamically
+    function updatePlusOneFields() {
+        const container = document.getElementById('plusOnesContainer');
+        const count = parseInt(document.getElementById('plusCount').value);
+        
+        // Clear previous dynamic inputs
+        container.innerHTML = '';
+
+        // Generate a new text input for each selected guest
+        for (let i = 1; i <= count; i++) {
+            const div = document.createElement('div');
+            div.className = 'form-group plus-one-input';
+            
+            div.innerHTML = `
+                <label for="guest_${i}">Guest ${i} Name</label>
+                <input type="text" id="guest_${i}" class="guest-name-input" required placeholder="Enter guest full name">
+            `;
+            container.appendChild(div);
+        }
+    }
+
+    // Handle form submission and generate WhatsApp Deep Link
+    document.getElementById('rsvpForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const mainName = document.getElementById('mainName').value.trim();
+        const plusCount = parseInt(document.getElementById('plusCount').value);
+        
+        // Gather all the plus-one names
+        let guestNames = [];
+        if (plusCount > 0) {
+            const inputs = document.querySelectorAll('.guest-name-input');
+            inputs.forEach(input => {
+                if (input.value.trim() !== '') {
+                    guestNames.push(input.value.trim());
+                }
+            });
+        }
+
+        // 2. FORMAT THE TEXT MESSAGE (Cleaned from invisible character blocks)
+        let message = `📝 *NEW EVENT RSVP*\n`;
+        message += `📍 *Event:* MMM-June'26\n\n`; // Added explicit event context
+        message += `👤 *Primary Guest:* ${mainName}\n`;
+        message += `➕ *Total Plus-Ones:* ${plusCount}\n`;
+        
+        if (guestNames.length > 0) {
+            message += `👥 *Guest Names:*\n`;
+            guestNames.forEach((name, index) => {
+                // Fixed: Explicit clean layout using regular spaces
+                message += `• ${name}\n`; 
+            });
+        }
+        
+        message += `\nLooking forward to it! ✨`;
+
+        // 3. ENCODE AND LAUNCH WHATSAPP
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappUrl = `https://wa.me/${HOST_PHONE}?text=${encodedMessage}`;
+
+        // Redirect the user to WhatsApp
+        window.location.href = whatsappUrl;
+    });
+</script>
