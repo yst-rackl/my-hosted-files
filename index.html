@@ -1,0 +1,178 @@
+html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event RSVP</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .rsvp-card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+        h2 {
+            color: #075e54;
+            margin-top: 0;
+            border-bottom: 2px solid #25d366;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #075e54;
+        }
+        .plus-one-input {
+            margin-top: 10px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        button {
+            width: 100%;
+            background-color: #25d366;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #20ba5a;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="rsvp-card">
+    <h2>🎉 Event Registration</h2>
+    <form id="rsvpForm">
+        <!-- Main Guest Name -->
+        <div class="form-group">
+            <label for="mainName">Your Name</label>
+            <input type="text" id="mainName" required placeholder="Enter your full name">
+        </div>
+
+        <!-- Plus-One Dropdown -->
+        <div class="form-group">
+            <label for="plusCount">Bringing any guests (+1s)?</label>
+            <select id="plusCount" onchange="updatePlusOneFields()">
+                <option value="0">Just me (0)</option>
+                <option value="1">1 Guest</option>
+                <option value="2">2 Guests</option>
+                <option value="3">3 Guests</option>
+                <option value="4">4 Guests</option>
+                <option value="5">5 Guests</option>
+            </select>
+        </div>
+
+        <!-- Dynamic Container for Guest Names -->
+        <div id="plusOnesContainer" class="form-group"></div>
+
+        <button type="submit">Confirm RSVP via WhatsApp</button>
+    </form>
+</div>
+
+<script>
+    // 1. SET YOUR PHONE NUMBER HERE 
+    // Must include country code, NO spaces, NO dashes, NO '+' sign.
+    // Example: '60123456789' for Malaysia, '15551234567' for US
+    const HOST_PHONE = '60123456789'; 
+
+    // Function to generate guest name fields dynamically
+    function updatePlusOneFields() {
+        const container = document.getElementById('plusOnesContainer');
+        const count = parseInt(document.getElementById('plusCount').value);
+        
+        // Clear previous dynamic inputs
+        container.innerHTML = '';
+
+        // Generate a new text input for each selected guest
+        for (let i = 1; i <= count; i++) {
+            const div = document.createElement('div');
+            div.className = 'form-group plus-one-input';
+            
+            div.innerHTML = `
+                <label for="guest_${i}">Guest ${i} Name</label>
+                <input type="text" id="guest_${i}" class="guest-name-input" required placeholder="Enter guest full name">
+            `;
+            container.appendChild(div);
+        }
+    }
+
+    // Handle form submission and generate WhatsApp Deep Link
+    document.getElementById('rsvpForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const mainName = document.getElementById('mainName').value.trim();
+        const plusCount = parseInt(document.getElementById('plusCount').value);
+        
+        // Gather all the plus-one names
+        let guestNames = [];
+        if (plusCount > 0) {
+            const inputs = document.querySelectorAll('.guest-name-input');
+            inputs.forEach(input => {
+                if (input.value.trim() !== '') {
+                    guestNames.push(input.value.trim());
+                }
+            });
+        }
+
+        // 2. FORMAT THE TEXT MESSAGE
+        let message = `📝 *NEW EVENT RSVP*\n\n`;
+        message += `👤 *Primary Guest:* ${mainName}\n`;
+        message += `➕ *Total Plus-Ones:* ${plusCount}\n`;
+        
+        if (guestNames.length > 0) {
+            message += `👥 *Guest Names:*\n`;
+            guestNames.forEach((name, index) => {
+                message += `  ${index + 1}. ${name}\n`;
+            });
+        }
+        
+        message += `\nLooking forward to it! ✨`;
+
+        // 3. ENCODE AND LAUNCH WHATSAPP
+        // encodeURIComponent converts spaces to %20, line breaks to %0A, etc.
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappUrl = `https://wa.me/${HOST_PHONE}?text=60122131392`;
+
+        // Redirect the user to WhatsApp
+        window.location.href = whatsappUrl;
+    });
+</script>
+
+</body>
+</html>
